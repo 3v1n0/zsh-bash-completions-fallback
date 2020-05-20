@@ -9,7 +9,10 @@ get_completions(){
 
     # load bash-completion
     declare -F _completion_loader &>/dev/null || {
-        if [ -f /etc/bash_completion ]; then
+        if [ -n "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}" ] &&
+           [ -f "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/completions" ]; then
+            source "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/completions"
+        elif [ -f /etc/bash_completion ]; then
             source /etc/bash_completion
         elif [ -f /usr/share/bash-completion/bash_completion ]; then
             source /usr/share/bash-completion/bash_completion
