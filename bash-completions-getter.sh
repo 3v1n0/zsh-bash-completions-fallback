@@ -39,7 +39,9 @@ get_completions(){
     [[ -n $completion ]] || return 1
 
     # execute completion function
-    "$completion"
+    # Thois may fail if compopt is called, but there's no easy way to pre-fill
+    # the bash input with some stuff, using only bashy things.
+    "$completion" 2> /dev/null
 
     # print completions to stdout
     for ((i = 0; i < ${#COMPREPLY[@]}; i++)); do
