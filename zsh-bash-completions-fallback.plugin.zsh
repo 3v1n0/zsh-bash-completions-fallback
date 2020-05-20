@@ -12,9 +12,11 @@ if ! [ -f /etc/bash_completion ] ||
 fi
 
 _completed_commands=()
-for command completion in ${(kv)_comps:#-*(-|-,*)}; do
-    _completed_commands+=($command)
-done
+if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
+    for command completion in ${(kv)_comps:#-*(-|-,*)}; do
+        _completed_commands+=($command)
+    done
+fi
 
 for i in /usr/share/bash-completion/completions/*; do
     completion=$(basename $i);
