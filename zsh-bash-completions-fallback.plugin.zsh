@@ -6,8 +6,10 @@ function _bash_completer {
     compadd -a out
 }
 
+_bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+
 if ! [ -f /etc/bash_completion ] ||
-   ! [ -f /usr/share/bash-completion/bash_completion ]; then
+   ! [ -f "$_bash_completions/bash_completion" ]; then
    return 1;
 fi
 
@@ -18,7 +20,7 @@ if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
     done
 fi
 
-for i in /usr/share/bash-completion/completions/*; do
+for i in $_bash_completions/completions/*; do
     completion=$(basename $i);
 
     if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
