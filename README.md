@@ -12,7 +12,9 @@ implementation](.https://brbsix.github.io/2015/11/29/accessing-tab-completion-pr
 Make sure you load this after other plugins to prevent their completions to be
 replaced by the (simpler) bash ones.
 
-Not all the bash completions can work properly, as per missing `compopt` support.
+Not all the bash completions can work as they were in bash, as per missing
+`compopt` support, that may be used to control the output or avoid adding
+spaces. However this could be implemented at later times.
 
 
 Requirements
