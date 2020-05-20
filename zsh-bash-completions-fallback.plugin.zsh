@@ -20,7 +20,9 @@ if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
     done
 fi
 
-for c in $_bash_completions/completions/*; do
+[ -d ~/.bash_completion.d ] && _local_completions=~/.bash_completion.d/*
+
+for c in $_bash_completions/completions/* $_local_completions; do
     completion=$c:t;
 
     if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
