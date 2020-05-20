@@ -4,6 +4,12 @@
 # License: LGPLv3 (http://www.gnu.org/licenses/lgpl-3.0.txt)
 #
 
+compopt() {
+    # Override default compopt
+    # TODO, to implement when possible
+    return 0
+}
+
 get_completions(){
     local completion COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMPREPLY=()
 
@@ -44,7 +50,7 @@ get_completions(){
     # execute completion function
     # Thois may fail if compopt is called, but there's no easy way to pre-fill
     # the bash input with some stuff, using only bashy things.
-    "$completion" 2> /dev/null
+    "$completion"
 
     # print completions to stdout
     for ((i = 0; i < ${#COMPREPLY[@]}; i++)); do
