@@ -20,8 +20,8 @@ if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
     done
 fi
 
-for i in $_bash_completions/completions/*; do
-    completion=$(basename $i);
+for c in $_bash_completions/completions/*; do
+    completion=$c:t;
 
     if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
         if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
