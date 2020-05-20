@@ -21,6 +21,13 @@ fi
 for i in /usr/share/bash-completion/completions/*; do
     completion=$(basename $i);
 
+    if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
+        if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
+              ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} ]]; then
+            continue;
+        fi
+    fi
+
     if [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
         compdef _bash_completer $completion;
     fi
