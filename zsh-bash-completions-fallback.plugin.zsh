@@ -10,7 +10,7 @@ function _bash_completer {
 function _bash_completions_load {
     local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
 
-    if ! [ -f /etc/bash_completion ] ||
+    if ! [ -f /etc/bash_completion ] &&
        ! [ -f "$bash_completions/bash_completion" ]; then
         return 1;
     fi
