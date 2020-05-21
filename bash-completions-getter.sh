@@ -58,7 +58,7 @@ get_completions(){
     # execute completion function
     # Thois may fail if compopt is called, but there's no easy way to pre-fill
     # the bash input with some stuff, using only bashy things.
-    $completion
+    ${completion} "${COMP_WORDS[$COMP_CWORD]}" "${COMP_WORDS[$((COMP_CWORD-1))]}"
 
     # print completions to stdout
     for ((i = 0; i < ${#COMPREPLY[@]}; i++)); do
