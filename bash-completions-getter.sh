@@ -91,12 +91,16 @@ get_completions() {
     # execute completion function or command (exporting the needed variables)
     # This may fail if compopt is called, but there's no easy way to pre-fill
     # the bash input with some stuff, using only bashy things.
-    cmd="${completion} '$cmd_name' '${COMP_WORDS[$COMP_CWORD]}' '${COMP_WORDS[$((COMP_CWORD-1))]}'"
+    local cmd=("$completion")
+    cmd+=("$cmd_name")
+    cmd+=("'${COMP_WORDS[$COMP_CWORD]}'")
+    cmd+=("'${COMP_WORDS[$((COMP_CWORD-1))]}'")
+
     if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
-        COMPREPLY=($($cmd))
+        COMPREPLY=($(${cmd[@]}))
     else
-        $cmd
+        ${cmd[@]}
     fi
 
     # print completions to stdout
