@@ -32,7 +32,9 @@ function _bash_completions_load {
             continue;
         fi
 
-        if [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
+        if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(ie)${completion}]} -le \
+              ${#ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST} ]] ||
+           [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
             compdef _bash_completer $completion;
         fi
     done
