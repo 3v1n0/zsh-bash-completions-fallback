@@ -24,8 +24,13 @@ function _bash_completions_load {
 
     [ -d ~/.bash_completion.d ] && local local_completions=~/.bash_completion.d/*
 
-    for c in $bash_completions/completions/* $local_completions; do
-        local completion=$c:t;
+    [[ -o extended_glob ]] && local had_exended_glob=true
+    setopt extendedglob
+
+    for c in $bash_completions/completions/_* \
+             $bash_completions/completions/^_* \
+             $local_completions; do
+        local completion=${${c:t}#_};
 
         if [ ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} -gt 0 ] &&
            ! ((${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(I)${completion}]})); then
@@ -37,6 +42,8 @@ function _bash_completions_load {
             compdef _bash_completer $completion;
         fi
     done
+
+    [ -z "$had_exended_glob" ] && unsetopt extendedglob
 }
 
 _bash_completions_load
