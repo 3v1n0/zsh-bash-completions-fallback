@@ -20,6 +20,10 @@ If a new bash completion has been installed in the system, it would be too
 expensive to monitor the completions directroy for new files, so just restart
 zsh or call `_bash_completions_load`.
 
+Once loaded you can see all the completions available via bash using
+
+      for command completion in ${(kv)_comps}; do printf "%-32s %s\n" $command $completion; done | sort | grep _bash_completer
+
 
 Requirements
 ------------------------------------------------------------------------------
