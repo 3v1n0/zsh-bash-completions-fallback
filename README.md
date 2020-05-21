@@ -54,8 +54,8 @@ default values only after having loaded this script into your ZSH session.
 * `ZSH_BASH_COMPLETIONS_FALLBACK_PATH` overrides the default bash completions
   path that is set to `/usr/share/bash-completion` by default.
 
-* `ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL` allow to replace all the zsh
-  completions, even if we already have one for the given command.
+* `ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL` set to `true` to allow to replace
+  all the zsh completions, even if we already have one for the given command.
 
 * `ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST` an array of commands for which we
   want to enable the bash completions, this allow to filter the commands to use
