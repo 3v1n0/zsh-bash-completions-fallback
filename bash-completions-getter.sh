@@ -41,8 +41,16 @@ get_completions(){
     # load completion
     _completion_loader "$1"
 
-    # detect completion
-    completion=$(complete -p "$1" 2>/dev/null | awk '{print $(NF-1)}')
+    # detect completion function or command
+    if [[ "$(complete -p "$1" 2>/dev/null)" =~ \
+          ^complete.*-[F][\ ]*(.+)([\ ]*$|([\ ]+-[a-zA-Z]+\ .*)) ]]; then
+        completion=${BASH_REMATCH[1]}
+    else
+        # TODO: We need to handle the cases where we just have
+        # -W 'list of words' and -X 'filters', but these should consider
+        # compopt too
+        return 1
+    fi
 
     # ensure completion was detected
     [[ -n $completion ]] || return 1
@@ -50,7 +58,7 @@ get_completions(){
     # execute completion function
     # Thois may fail if compopt is called, but there's no easy way to pre-fill
     # the bash input with some stuff, using only bashy things.
-    "$completion"
+    $completion
 
     # print completions to stdout
     for ((i = 0; i < ${#COMPREPLY[@]}; i++)); do
