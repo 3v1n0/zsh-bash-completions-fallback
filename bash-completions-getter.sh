@@ -14,12 +14,14 @@ compopt() {
 parse_complete_options() {
     unset COMPLETE_ACTION
     unset COMPLETE_ACTION_TYPE
+    unset COMPLETE_SUPPORTED_COMMANDS
 
     while getopts ":abcdefgjksuvp:D:o:A:G:W:F:C:X:P:S:" opt; do
         case ${opt} in
             F|C)
                 [ -n "$COMPLETE_ACTION" ] && return 2
-                COMPLETE_ACTION=${OPTARG//\'/}
+                local optarg=${OPTARG#\'}
+                COMPLETE_ACTION=${optarg%\'}
                 COMPLETE_ACTION_TYPE=${opt}
             ;;
             X)
@@ -33,15 +35,15 @@ parse_complete_options() {
 
     [ -z "$COMPLETE_ACTION" ] && return 1
 
+    COMPLETE_SUPPORTED_COMMANDS=()
     for ((i = $OPTIND; i <= ${#@}; i++)); do
-        COMPLETE_ACTION+=" ${@:$i:1}"
-        break # We only care about the first fix-position
+        COMPLETE_SUPPORTED_COMMANDS+=("${@:$i:1}")
     done
 }
 
 get_completions() {
     local COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
-    local completion COMPREPLY=() cmd
+    local completion COMPREPLY=() cmd_name
 
     # load bash-completion if necessary
     declare -F _completion_loader &>/dev/null || {
@@ -60,6 +62,7 @@ get_completions() {
     [ -z "$COMP_WORDBREAKS" ] && COMP_WORDBREAKS="\"'><;|&("
 
     eval set -- "$@"
+    cmd_name=$1
 
     COMP_WORDS=("$@")
 
@@ -70,10 +73,10 @@ get_completions() {
     COMP_CWORD=$(( ${#COMP_WORDS[@]} - 1 ))
 
     # load completion
-    _completion_loader "$1"
+    _completion_loader "$cmd_name"
 
     # detect completion function or command
-    if [[ "$(complete -p "$1" 2>/dev/null)" =~ \
+    if [[ "$(complete -p "$cmd_name" 2>/dev/null)" =~ \
           ^complete[[:space:]]+(.+) ]]; then
         local args=${BASH_REMATCH[1]};
         parse_complete_options $args
@@ -88,7 +91,7 @@ get_completions() {
     # execute completion function or command (exporting the needed variables)
     # This may fail if compopt is called, but there's no easy way to pre-fill
     # the bash input with some stuff, using only bashy things.
-    cmd="${completion} '${COMP_WORDS[$COMP_CWORD]}' '${COMP_WORDS[$((COMP_CWORD-1))]}'"
+    cmd="${completion} '$cmd_name' '${COMP_WORDS[$COMP_CWORD]}' '${COMP_WORDS[$((COMP_CWORD-1))]}'"
     if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
         COMPREPLY=($($cmd))
