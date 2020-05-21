@@ -26,11 +26,9 @@ function _bash_completions_load {
     for c in $bash_completions/completions/* $local_completions; do
         local completion=$c:t;
 
-        if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
-            if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
-                ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} ]]; then
-                continue;
-            fi
+        if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
+              ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} ]]; then
+            continue;
         fi
 
         if [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
