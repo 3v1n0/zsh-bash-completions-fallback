@@ -16,6 +16,10 @@ Not all the bash completions can work as they were in bash, as per missing
 `compopt` support, that may be used to control the output or avoid adding
 spaces. However this could be implemented at later times.
 
+If a new bash completion has been installed in the system, it would be too
+expensive to monitor the completions directroy for new files, so just restart
+zsh or call `_bash_completions_load`.
+
 
 Requirements
 ------------------------------------------------------------------------------

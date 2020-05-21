@@ -6,33 +6,37 @@ function _bash_completer {
     compadd -a out
 }
 
-_bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+function _bash_completions_load {
+    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
 
-if ! [ -f /etc/bash_completion ] ||
-   ! [ -f "$_bash_completions/bash_completion" ]; then
-   return 1;
-fi
+    if ! [ -f /etc/bash_completion ] ||
+       ! [ -f "$bash_completions/bash_completion" ]; then
+        return 1;
+    fi
 
-_completed_commands=()
-if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
-    for command completion in ${(kv)_comps:#-*(-|-,*)}; do
-        _completed_commands+=($command)
-    done
-fi
+    local _completed_commands=()
+    if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
+        for command completion in ${(kv)_comps:#-*(-|-,*)}; do
+            _completed_commands+=($command)
+        done
+    fi
 
-[ -d ~/.bash_completion.d ] && _local_completions=~/.bash_completion.d/*
+    [ -d ~/.bash_completion.d ] && local local_completions=~/.bash_completion.d/*
 
-for c in $_bash_completions/completions/* $_local_completions; do
-    completion=$c:t;
+    for c in $bash_completions/completions/* $local_completions; do
+        local completion=$c:t;
 
-    if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
-        if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
-              ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} ]]; then
-            continue;
+        if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST" ]; then
+            if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
+                ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} ]]; then
+                continue;
+            fi
         fi
-    fi
 
-    if [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
-        compdef _bash_completer $completion;
-    fi
-done
+        if [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
+            compdef _bash_completer $completion;
+        fi
+    done
+}
+
+_bash_completions_load
