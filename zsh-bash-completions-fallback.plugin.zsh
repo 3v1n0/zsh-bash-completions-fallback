@@ -1,8 +1,9 @@
-our_path=${0:A:h}
+_bash_completions_getter_path=${0:A:h}/bash-completions-getter.sh
 
 function _bash_completer {
-    cmd=${words[@]};
-    out=("${(@f)$(bash -c "source ${our_path}/bash-completions-getter.sh; get_completions '$cmd'")}");
+    local cmd=${words[@]};
+    local out=("${(@f)$(bash -c \
+        "source ${_bash_completions_getter_path}; get_completions '$cmd'")}");
     compadd -a out
 }
 
