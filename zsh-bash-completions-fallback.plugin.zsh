@@ -27,14 +27,13 @@ function _bash_completions_load {
     for c in $bash_completions/completions/* $local_completions; do
         local completion=$c:t;
 
-        if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(ie)${completion}]} -gt \
-              ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} ]]; then
+        if [ ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} -gt 0 ] &&
+           ! ((${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(I)${completion}]})); then
             continue;
         fi
 
-        if [[ ${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(ie)${completion}]} -le \
-              ${#ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST} ]] ||
-           [[ ${_completed_commands[(ie)${completion}]} -gt ${#_completed_commands} ]]; then
+        if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(I)${completion}]})) ||
+           ! ((${_completed_commands[(I)${completion}]})); then
             compdef _bash_completer $completion;
         fi
     done
