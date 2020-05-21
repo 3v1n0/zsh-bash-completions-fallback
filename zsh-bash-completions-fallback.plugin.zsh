@@ -15,15 +15,6 @@ function _bash_completions_load {
         return 1;
     fi
 
-    local _completed_commands=()
-    if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
-        for command completion in ${(kv)_comps}; do
-            if [ "${command:0:1}" != '-' ]; then
-                _completed_commands+=($command)
-            fi
-        done
-    fi
-
     [ -d ~/.bash_completion.d ] && local local_completions=~/.bash_completion.d/*
 
     [[ -o extended_glob ]] && local had_exended_glob=true
@@ -40,7 +31,7 @@ function _bash_completions_load {
         fi
 
         if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(I)${completion}]})) ||
-           ! ((${_completed_commands[(I)${completion}]})); then
+           ! [[ -v _comps[$completion] ]]; then
             compdef _bash_completer $completion;
         fi
     done
