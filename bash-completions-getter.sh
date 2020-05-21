@@ -1,5 +1,6 @@
 
 # Author: Brian Beffa <brbsix@gmail.com>
+# Updated by: Marco Trevisan <mail@3v1n0.net>
 # Original source: https://brbsix.github.io/2015/11/29/accessing-tab-completion-programmatically-in-bash/
 # License: LGPLv3 (http://www.gnu.org/licenses/lgpl-3.0.txt)
 #
@@ -10,10 +11,39 @@ compopt() {
     return 0
 }
 
-get_completions(){
-    local completion COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMPREPLY=()
+parse_complete_options() {
+    unset COMPLETE_ACTION
+    unset COMPLETE_ACTION_TYPE
 
-    # load bash-completion
+    while getopts ":abcdefgjksuvp:D:o:A:G:W:F:C:X:P:S:" opt; do
+        case ${opt} in
+            F|C)
+                [ -n "$COMPLETE_ACTION" ] && return 2
+                COMPLETE_ACTION=${OPTARG//\'/}
+                COMPLETE_ACTION_TYPE=${opt}
+            ;;
+            X)
+                # TODO, but to support this we also need to handle compopt and -o
+            ;;
+            W)
+                # TODO, but to support this we also need to handle compopt and -o
+            ;;
+        esac
+    done
+
+    [ -z "$COMPLETE_ACTION" ] && return 1
+
+    for ((i = $OPTIND; i <= ${#@}; i++)); do
+        COMPLETE_ACTION+=" ${@:$i:1}"
+        break # We only care about the first fix-position
+    done
+}
+
+get_completions() {
+    local COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
+    local completion COMPREPLY=() cmd
+
+    # load bash-completion if necessary
     declare -F _completion_loader &>/dev/null || {
         if [ -n "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}" ] &&
            [ -f "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/completions" ]; then
@@ -43,22 +73,27 @@ get_completions(){
 
     # detect completion function or command
     if [[ "$(complete -p "$1" 2>/dev/null)" =~ \
-          ^complete.*-[F][\ ]*(.+)([\ ]*$|([\ ]+-[a-zA-Z]+\ .*)) ]]; then
-        completion=${BASH_REMATCH[1]}
+          ^complete[[:space:]]+(.+) ]]; then
+        local args=${BASH_REMATCH[1]};
+        parse_complete_options $args
+        completion="$COMPLETE_ACTION"
     else
-        # TODO: We need to handle the cases where we just have
-        # -W 'list of words' and -X 'filters', but these should consider
-        # compopt too
-        return 1
+        return 1;
     fi
 
     # ensure completion was detected
-    [[ -n $completion ]] || return 1
+    [[ -n "$completion" ]] || return 1
 
-    # execute completion function
-    # Thois may fail if compopt is called, but there's no easy way to pre-fill
+    # execute completion function or command (exporting the needed variables)
+    # This may fail if compopt is called, but there's no easy way to pre-fill
     # the bash input with some stuff, using only bashy things.
-    ${completion} "${COMP_WORDS[$COMP_CWORD]}" "${COMP_WORDS[$((COMP_CWORD-1))]}"
+    cmd="${completion} '${COMP_WORDS[$COMP_CWORD]}' '${COMP_WORDS[$((COMP_CWORD-1))]}'"
+    if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
+        export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
+        COMPREPLY=($($cmd))
+    else
+        $cmd
+    fi
 
     # print completions to stdout
     for ((i = 0; i < ${#COMPREPLY[@]}; i++)); do
