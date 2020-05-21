@@ -57,6 +57,7 @@ get_completions() {
 
     COMP_LINE=$*
     COMP_POINT=${#COMP_LINE}
+    [ -z "$COMP_WORDBREAKS" ] && COMP_WORDBREAKS="\"'><;|&("
 
     eval set -- "$@"
 
