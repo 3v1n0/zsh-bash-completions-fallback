@@ -17,8 +17,10 @@ function _bash_completions_load {
 
     local _completed_commands=()
     if [ "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" != true ]; then
-        for command completion in ${(kv)_comps:#-*(-|-,*)}; do
-            _completed_commands+=($command)
+        for command completion in ${(kv)_comps}; do
+            if [ "${command:0:1}" != '-' ]; then
+                _completed_commands+=($command)
+            fi
         done
     fi
 
