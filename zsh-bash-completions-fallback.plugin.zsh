@@ -7,8 +7,57 @@ function _bash_completer {
     compadd -a out
 }
 
+function _bash_completion_lazy_loader {
+    local completion=$1
+
+    if [[ -v functions[__bash_complete_${completion}] ]]; then
+        unalias $completion
+        unfunction __bash_complete_${completion}
+    fi
+
+    if ! [[ -v builtins[$completion] ]]; then
+        __bash_complete_${completion}() {
+            local c=${0#__bash_complete_}
+            unfunction $0
+            unalias $c
+            compdef _bash_completer $c
+            $c $@
+        }
+        alias $completion="__bash_complete_${completion}"
+    fi
+}
+
 function _bash_completions_load {
     local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+    local reserved_words=(
+        "do"
+        "done"
+        "esac"
+        "then"
+        "elif"
+        "else"
+        "fi"
+        "for"
+        "case"
+        "if"
+        "while"
+        "function"
+        "repeat"
+        "time"
+        "until"
+        "select"
+        "coproc"
+        "nocorrect"
+        "foreach"
+        "end"
+        "declare"
+        "export"
+        "float"
+        "integer"
+        "local"
+        "readonly"
+        "typeset"
+    )
 
     if ! [ -f /etc/bash_completion ] &&
        ! [ -f "$bash_completions/bash_completion" ]; then
@@ -24,21 +73,38 @@ function _bash_completions_load {
              $bash_completions/completions/^_* \
              $local_completions; do
         local completion=${${c:t}#_};
+        local available_command=
 
         if [ ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} -gt 0 ] &&
            ! ((${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(I)${completion}]})); then
             continue;
         fi
 
-        if ! [[ -v commands[$completion] ]] &&
-           [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL" ]; then
+        if  [[ -v commands[$completion] ]] || [[ -v aliases[$completion] ]]; then
+            available_command=1
+        fi
+
+        if [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE" ] &&
+           [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL" ] &&
+           [ -z "$available_command" ]; then
+            continue;
+        elif ((${reserved_words[(I)${completion}]})); then
             continue;
         fi
 
         if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(I)${completion}]})) ||
            [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" ] ||
            ! [[ -v _comps[$completion] ]]; then
-            compdef _bash_completer $completion;
+
+            if [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AVAILABLE" ] &&
+               [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE" ]; then
+                compdef _bash_completer $completion;
+            elif [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE" ] &&
+                 [ -n "$available_command" ]; then
+                compdef _bash_completer $completion;
+            else
+                _bash_completion_lazy_loader $completion
+            fi
         fi
     done
 

@@ -79,3 +79,16 @@ default values only after having loaded this script into your ZSH session.
   to always preload completions even for non-available commands. We don't do it
   by default and if any command is added at later times, the user can manually
   call `_bash_completions_load` (or source this file again)
+
+* `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AVAILABLE` set this variable (to any
+  value) in order to generate aliases for lazy loading the completions so that
+  the completions are loaded only when the command is triggered the first time.
+  Setting this variable will conflict with
+  `$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL`, and may lead to an undefined
+  behavior.
+
+* `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE` set this variable (to any
+  value) in order to generate aliases for lazy loading the completions in case
+  the command is not available. Setting this variable will conflict with
+  `$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL`, and so the former will be
+  ignored
