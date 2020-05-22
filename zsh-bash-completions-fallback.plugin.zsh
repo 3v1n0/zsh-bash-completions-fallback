@@ -31,6 +31,7 @@ function _bash_completions_load {
         fi
 
         if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(I)${completion}]})) ||
+           [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" ] ||
            ! [[ -v _comps[$completion] ]]; then
             compdef _bash_completer $completion;
         fi
