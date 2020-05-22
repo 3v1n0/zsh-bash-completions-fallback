@@ -92,6 +92,10 @@ function _bash_completions_load {
             continue;
         fi
 
+        if ((${ZSH_BASH_COMPLETIONS_FALLBACK_BLACKLIST[(I)${completion}]})); then
+            continue;
+        fi
+
         if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(I)${completion}]})) ||
            [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" ] ||
            ! [[ -v _comps[$completion] ]]; then

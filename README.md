@@ -69,6 +69,9 @@ default values only after having loaded this script into your ZSH session.
   This also can be used with `$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL` to
   only use a subset of completions from bash only.
 
+* `ZSH_BASH_COMPLETIONS_FALLBACK_BLACKLIST` an array of commands for which we
+  want to disable the bash completions.
+
 * `ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST` an array of commands for which we
   want to give priority to the bash completions over the zsh ones.
   So, in case a zsh completion for such commands is available, we just ignore it
