@@ -74,3 +74,8 @@ default values only after having loaded this script into your ZSH session.
   So, in case a zsh completion for such commands is available, we just ignore it
   and replace it with the bash ones.
   This has no effect if `$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL` is set.
+
+* `ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL` set this variable (to any value)
+  to always preload completions even for non-available commands. We don't do it
+  by default and if any command is added at later times, the user can manually
+  call `_bash_completions_load` (or source this file again)
