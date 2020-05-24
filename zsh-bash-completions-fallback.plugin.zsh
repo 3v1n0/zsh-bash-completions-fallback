@@ -7,26 +7,6 @@ function _bash_completer {
     compadd -a out
 }
 
-function _bash_completion_lazy_loader {
-    local completion=$1
-
-    if [[ -v functions[__bash_complete_${completion}] ]]; then
-        unalias $completion
-        unfunction __bash_complete_${completion}
-    fi
-
-    if ! [[ -v builtins[$completion] ]]; then
-        __bash_complete_${completion}() {
-            local c=${0#__bash_complete_}
-            unfunction $0
-            unalias $c
-            compdef _bash_completer $c
-            $c $@
-        }
-        alias $completion="__bash_complete_${completion}"
-    fi
-}
-
 function _bash_completions_load {
     local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
     local reserved_words=(
@@ -73,20 +53,15 @@ function _bash_completions_load {
              $bash_completions/completions/^_* \
              $local_completions; do
         local completion=${${c:t}#_};
-        local available_command=
 
         if [ ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} -gt 0 ] &&
            ! ((${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(I)${completion}]})); then
             continue;
         fi
 
-        if  [[ -v commands[$completion] ]] || [[ -v aliases[$completion] ]]; then
-            available_command=1
-        fi
-
-        if [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE" ] &&
-           [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL" ] &&
-           [ -z "$available_command" ]; then
+        if [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL" ] &&
+           ! [[ -v commands[$completion] ]] &&
+           ! [[ -v aliases[$completion] ]]; then
             continue;
         elif ((${reserved_words[(I)${completion}]})); then
             continue;
@@ -100,19 +75,53 @@ function _bash_completions_load {
            [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" ] ||
            ! [[ -v _comps[$completion] ]]; then
 
-            if [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AVAILABLE" ] &&
-               [ -z "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE" ]; then
-                compdef _bash_completer $completion;
-            elif [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE" ] &&
-                 [ -n "$available_command" ]; then
-                compdef _bash_completer $completion;
-            else
-                _bash_completion_lazy_loader $completion
-            fi
+            compdef _bash_completer $completion
         fi
     done
 
     [ -z "$had_exended_glob" ] && unsetopt extendedglob
 }
 
-_bash_completions_load
+function _bash_completion_get_current_tab_completer()
+{
+    local current_binding=(${$(bindkey '^I')})
+    echo "${${current_binding[2]}:-expand-or-complete}"
+}
+
+typeset -g _bash_completions_loaded=
+
+function _bash-completion-init-and-continue()
+{
+    if [ -n "$_bash_completions_loaded" ]; then
+        zle $_bash_completion_previous_binding
+        return $?
+    fi
+
+    local current_binding=$(_bash_completion_get_current_tab_completer)
+    unfunction _bash_completions_lazy_load
+    _bash_completions_load
+    _bash_completions_loaded=1
+
+    if [[ "$current_binding" == "_bash-completion-init-and-continue" ]]; then
+        bindkey "^I" $_bash_completion_previous_binding
+        unset _bash_completion_previous_binding
+        unfunction _bash-completion-init-and-continue
+    fi
+
+    zle $_bash_completion_previous_binding
+}
+
+function _bash_completions_lazy_load()
+{
+    local default_binding=$(_bash_completion_get_current_tab_completer)
+    typeset -g _bash_completion_previous_binding=$default_binding
+
+    zle -N _bash-completion-init-and-continue
+    bindkey "^I" _bash-completion-init-and-continue
+}
+
+if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE" ]; then
+    _bash_completions_load
+else
+    _bash_completions_lazy_load
+fi

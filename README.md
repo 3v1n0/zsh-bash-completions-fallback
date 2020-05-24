@@ -18,6 +18,11 @@ missing `compopt` support, that may be used to control the output or avoid
 adding spaces or limit the results. However this could be implemented at later
 times.
 
+The plugin by default works by lazy-loading the completions the first time you
+hit TAB to complete a command, however this can be controlled using the
+`$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE` parameter, to load them all
+on startup.
+
 If a new bash completion has been installed in the system, it would be too
 expensive to monitor the completions directroy for new files, so just restart
 zsh or call `_bash_completions_load`.
@@ -85,15 +90,7 @@ default values only after having loaded this script into your ZSH session.
   by default and if any command is added at later times, the user can manually
   call `_bash_completions_load` (or source this file again)
 
-* `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AVAILABLE` set this variable (to any
-  value) in order to generate aliases for lazy loading the completions so that
-  the completions are loaded only when the command is triggered the first time.
-  Setting this variable will conflict with
-  `$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL`, and may lead to an undefined
-  behavior.
-
-* `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_UNAVAILABLE` set this variable (to any
-  value) in order to generate aliases for lazy loading the completions in case
-  the command is not available. Setting this variable will conflict with
-  `$ZSH_BASH_COMPLETIONS_FALLBACK_PRELOAD_ALL`, and so the former will be
-  ignored
+* `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE` set this variable (to any
+  value) in order to disable the lazy loading of the completions at the fist
+  time the tab-completion is triggered. By setting this the completions are
+  loaded instead at startup.
