@@ -1,3 +1,5 @@
+[[ -o interactive ]] || return 0
+
 _bash_completions_getter_path=${0:A:h}/bash-completions-getter.sh
 
 function _bash_completer {
