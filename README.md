@@ -6,15 +6,17 @@ available.
 While this could be supported natively via `bashcompinit`, this doesn't
 actually work most of the times, as completion scripts may use syntax not
 supported by zsh, and so it's just better to implement this querying the bash
-itself, using a bash script called at completion time (thanks to [Brian Baffa
-implementation](https://brbsix.github.io/2015/11/29/accessing-tab-completion-programmatically-in-bash/)).
+itself, using a bash script called at completion time (based on [Brian Baffa
+implementation](https://brbsix.github.io/2015/11/29/accessing-tab-completion-programmatically-in-bash/)
+and including various fixes to support commands and completion parameters).
 
 Make sure you load this after other plugins to prevent their completions to be
 replaced by the (simpler) bash ones.
 
-Not all the bash completions can work as they were in bash, as per missing
-`compopt` support, that may be used to control the output or avoid adding
-spaces. However this could be implemented at later times.
+Not all the bash completions can work as they precisely do in bash, as per
+missing `compopt` support, that may be used to control the output or avoid
+adding spaces or limit the results. However this could be implemented at later
+times.
 
 If a new bash completion has been installed in the system, it would be too
 expensive to monitor the completions directroy for new files, so just restart
