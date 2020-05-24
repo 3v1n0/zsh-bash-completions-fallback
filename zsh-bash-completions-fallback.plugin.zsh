@@ -89,16 +89,28 @@ function _bash_completion_get_current_tab_completer()
 }
 
 typeset -g _bash_completions_loaded=
+typeset -g _bash_completions_available=0
 
 function _bash-completion-init-and-continue()
 {
+    if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE" ]; then
+        local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+        local completion_files=($bash_completions/completions/*)
+
+        if [ $_bash_completions_available -ne ${#completion_files[@]} ]; then
+            typeset -g _bash_completions_available=${#completion_files[@]}
+            typeset -g _bash_completions_loaded=
+        fi
+    fi
+
     if [ -n "$_bash_completions_loaded" ]; then
         zle $_bash_completion_previous_binding
         return $?
     fi
 
     local current_binding=$(_bash_completion_get_current_tab_completer)
-    unfunction _bash_completions_lazy_load
+    (( ${+functions[_bash_completions_lazy_load]} )) && \
+        unset _bash_completions_lazy_load
     _bash_completions_load
     _bash_completions_loaded=1
 
@@ -122,6 +134,10 @@ function _bash_completions_lazy_load()
 
 if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE" ]; then
     _bash_completions_load
+
+    if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE" ]; then
+        _bash_completions_lazy_load
+    fi
 else
     _bash_completions_lazy_load
 fi

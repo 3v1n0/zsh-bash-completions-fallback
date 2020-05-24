@@ -23,9 +23,12 @@ hit TAB to complete a command, however this can be controlled using the
 `$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE` parameter, to load them all
 on startup.
 
-If a new bash completion has been installed in the system, it would be too
-expensive to monitor the completions directroy for new files, so just restart
-zsh or call `_bash_completions_load`.
+If a new bash completion has been installed in the system, you can just restart
+zsh or call `_bash_completions_load`, if instead you want this to be handled
+automatically, you can use `$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE`
+to update all the the available completions at every TAB-completion.
+This is disabled by default, to avoid IO operations at each completion, but it
+is still very fast in most of the platforms.
 
 Once loaded you can see all the completions available via bash using
 
@@ -94,3 +97,9 @@ default values only after having loaded this script into your ZSH session.
   value) in order to disable the lazy loading of the completions at the fist
   time the tab-completion is triggered. By setting this the completions are
   loaded instead at startup.
+
+* `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE` set this variable (to any
+  value) to automatically check for new completions and to install them at every
+  tab-completion. This is not affected by the value of
+  `$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE` and it will work both in
+  case lazy loading is enabled or not.
