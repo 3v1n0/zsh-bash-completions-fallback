@@ -4,7 +4,7 @@ _bash_completions_getter_path=${0:A:h}/bash-completions-getter.sh
 
 function _bash_completer {
     local cmd=${words[@]};
-    local out=("${(@f)$(bash -c \
+    local out=("${(@f)$(ZSH_CURSOR=$CURSOR bash -c \
         "source ${_bash_completions_getter_path}; get_completions '$cmd'")}");
     compadd -a out
 }
