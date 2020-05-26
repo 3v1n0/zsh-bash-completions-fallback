@@ -57,20 +57,18 @@ get_completions() {
         fi
     }
 
-    COMP_LINE=$*
+    COMP_LINE=${ZSH_BUFFER}
     COMP_POINT=${ZSH_CURSOR:-${#COMP_LINE}}
-    [ -z "$COMP_WORDBREAKS" ] && COMP_WORDBREAKS="\"'><;|&("
+    COMP_WORDBREAKS=${ZSH_WORDBREAKS}
+    COMP_WORDS=(${ZSH_WORDS[@]})
+    cmd_name=${ZSH_NAME}
 
-    eval set -- "$@"
-    cmd_name=$1
-
-    COMP_WORDS=("$@")
 
     # add '' to COMP_WORDS if the last character of the command line is a space
     [[ "${COMP_LINE[@]: -1}" = ' ' ]] && COMP_WORDS+=('')
 
-    # index of the last word
-    COMP_CWORD=$(( ${#COMP_WORDS[@]} - 1 ))
+    # index of the last word as fallback
+    COMP_CWORD=${ZSH_CURRENT:-$(( ${#COMP_WORDS[@]} - 1 ))}
 
     # load completion
     _completion_loader "$cmd_name"
@@ -94,7 +92,12 @@ get_completions() {
     local cmd=("$completion")
     cmd+=("$cmd_name")
     cmd+=("'${COMP_WORDS[$COMP_CWORD]}'")
-    cmd+=("'${COMP_WORDS[$((COMP_CWORD-1))]}'")
+
+    if [ $((COMP_CWORD-1)) -ge 0 ]; then
+        cmd+=("'${COMP_WORDS[$((COMP_CWORD-1))]}'");
+    else
+        cmd+=('');
+    fi
 
     if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
