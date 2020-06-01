@@ -11,6 +11,33 @@ compopt() {
     return 0
 }
 
+source_bash_completion() {
+    local src_name='bash_completion'
+    if [ -n "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}" ] &&
+       [ -f "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/$src_name" ]; then
+        source "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/$src_name"
+    elif [ -f "/etc/$src_name" ]; then
+        source "/etc/$src_name"
+    elif [[ $BASH_SOURCE == */* ]] &&
+         [ -f "${BASH_SOURCE%/*}/$src_name" ]; then
+            source "${BASH_SOURCE%/*}/$src_name"
+    else
+        local -a dirs=()
+        local OIFS=$IFS IFS=: dir
+        local lookup_dirs=(${XDG_DATA_DIRS:-/usr/local/share:/usr/share})
+        IFS=$OIFS
+
+        for dir in ${lookup_dirs[@]}; do
+            if [ -f "$dir/bash-completion/$src_name" ]; then
+                source "$dir/bash-completion/$src_name"
+                return 0
+            fi
+        done
+    fi
+
+    return 1
+}
+
 parse_complete_options() {
     unset COMPLETE_ACTION
     unset COMPLETE_ACTION_TYPE
@@ -45,18 +72,6 @@ get_completions() {
     local COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
     local completion COMPREPLY=() cmd_name
 
-    # load bash-completion if necessary
-    declare -F _completion_loader &>/dev/null || {
-        if [ -n "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}" ] &&
-           [ -f "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/completions" ]; then
-            source "${ZSH_BASH_COMPLETIONS_FALLBACK_PATH}/completions"
-        elif [ -f /etc/bash_completion ]; then
-            source /etc/bash_completion
-        elif [ -f /usr/share/bash-completion/bash_completion ]; then
-            source /usr/share/bash-completion/bash_completion
-        fi
-    }
-
     COMP_LINE=${ZSH_BUFFER}
     COMP_POINT=${ZSH_CURSOR:-${#COMP_LINE}}
     COMP_WORDBREAKS=${ZSH_WORDBREAKS}
@@ -71,6 +86,7 @@ get_completions() {
     COMP_CWORD=${ZSH_CURRENT:-$(( ${#COMP_WORDS[@]} - 1 ))}
 
     # load completion
+    source_bash_completion
     _completion_loader "$cmd_name"
 
     # detect completion function or command
