@@ -97,7 +97,7 @@ function _bash_completion_get_current_tab_completer()
 }
 
 typeset -g _bash_completions_loaded=
-typeset -g _bash_completions_available=0
+integer -g _bash_completions_available=0
 
 function _bash-completion-init-and-continue()
 {
