@@ -71,15 +71,15 @@ function _bash_completions_load {
            ! [[ -v commands[$completion] ]] &&
            ! [[ -v aliases[$completion] ]]; then
             continue;
-        elif ((${reserved_words[(I)${completion}]})); then
+        elif ((${reserved_words[(Ie)${completion}]})); then
             continue;
         fi
 
-        if ((${ZSH_BASH_COMPLETIONS_FALLBACK_BLACKLIST[(I)${completion}]})); then
+        if ((${ZSH_BASH_COMPLETIONS_FALLBACK_BLACKLIST[(Ie)${completion}]})); then
             continue;
         fi
 
-        if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(I)${completion}]})) ||
+        if ((${ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_LIST[(Ie)${completion}]})) ||
            [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" ] ||
            ! [[ -v _comps[$completion] ]]; then
 
