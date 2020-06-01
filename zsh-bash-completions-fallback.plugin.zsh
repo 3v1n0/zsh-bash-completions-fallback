@@ -2,7 +2,7 @@
 
 _bash_completions_getter_path=${0:A:h}/bash-completions-getter.sh
 
-function _bash_completer {
+function _bash_completions_fallback_completer {
     local out=("${(@f)$( \
         ZSH_NAME="$name" \
         ZSH_BUFFER="$BUFFER" \
@@ -83,7 +83,7 @@ function _bash_completions_load {
            [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL" ] ||
            ! [[ -v _comps[$completion] ]]; then
 
-            compdef _bash_completer $completion
+            compdef _bash_completions_fallback_completer $completion
         fi
     done
 
