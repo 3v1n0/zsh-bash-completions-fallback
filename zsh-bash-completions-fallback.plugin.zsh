@@ -15,6 +15,31 @@ function _bash_completions_fallback_completer {
     compadd -a out
 }
 
+function _bash_completions_fetch_supported_commands {
+    emulate -L zsh
+    setopt extended_glob typeset_silent no_short_loops
+    unsetopt nomatch
+
+    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+    local -a dirs=(
+        ${BASH_COMPLETION_USER_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion}/completions
+    )
+
+    for dir in ${(@s/:/)${XDG_DATA_DIRS:-/usr/local/share:/usr/share}}; do
+        dirs+=("$dir/bash-completion/completions")
+    done
+
+    dirs+=("$bash_completions/completions")
+
+    for dir in "${dirs[@]}"; do
+        for c in "$dir"/*; do
+            [ ! -f "$c" ] && continue
+            local command=${${${c:t}#_}%.bash};
+            _bash_completions_commands+=($command)
+        done
+    done
+}
+
 function _bash_completions_load {
     local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
     local reserved_words=(
@@ -52,16 +77,10 @@ function _bash_completions_load {
         return 1;
     fi
 
-    [ -d ~/.bash_completion.d ] && local local_completions=~/.bash_completion.d/*
+    local -a -U _bash_completions_commands=()
+    _bash_completions_fetch_supported_commands
 
-    [[ -o extended_glob ]] && local had_exended_glob=true
-    setopt extendedglob
-
-    for c in $bash_completions/completions/_* \
-             $bash_completions/completions/^_* \
-             $local_completions; do
-        local completion=${${c:t}#_};
-
+    for completion in $_bash_completions_commands; do
         if [ ${#ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST} -gt 0 ] &&
            ! ((${ZSH_BASH_COMPLETIONS_FALLBACK_WHITELIST[(I)${completion}]})); then
             continue;
@@ -86,8 +105,6 @@ function _bash_completions_load {
             compdef _bash_completions_fallback_completer $completion
         fi
     done
-
-    [ -z "$had_exended_glob" ] && unsetopt extendedglob
 }
 
 function _bash_completion_get_current_tab_completer()
@@ -98,15 +115,20 @@ function _bash_completion_get_current_tab_completer()
 
 typeset -g _bash_completions_loaded=
 integer -g _bash_completions_available=0
+integer -g _bash_completions_last_checked_timestamp=$EPOCHSECONDS
 
 function _bash-completion-init-and-continue()
 {
-    if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE" ]; then
-        local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
-        local completion_files=($bash_completions/completions/*)
+    local update_threshold=${ZSH_BASH_COMPLETIONS_FALLBACK_AUTO_UPDATE_THRESHOLD:-300}
+    if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE" ] &&
+       [ -n "$EPOCHSECONDS" ] &&
+       [ $EPOCHSECONDS -gt \
+         $((_bash_completions_last_checked_timestamp + update_threshold)) ]; then
+        local -a -U _bash_completions_commands=()
+        _bash_completions_fetch_supported_commands
 
-        if [ $_bash_completions_available -ne ${#completion_files[@]} ]; then
-            typeset -g _bash_completions_available=${#completion_files[@]}
+        if [ $_bash_completions_available -ne ${#_bash_completions_commands[@]} ]; then
+            typeset -g _bash_completions_available=${#_bash_completions_commands[@]}
             typeset -g _bash_completions_loaded=
         fi
     fi

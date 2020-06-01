@@ -100,6 +100,12 @@ default values only after having loaded this script into your ZSH session.
 
 * `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE` set this variable (to any
   value) to automatically check for new completions and to install them at every
-  tab-completion. This is not affected by the value of
+  tab-completion if the threshold from the last update set in
+  `$ZSH_BASH_COMPLETIONS_FALLBACK_AUTO_UPDATE_THRESHOLD` has passed.
+  This is not affected by the value of
   `$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE` and it will work both in
   case lazy loading is enabled or not.
+
+* `ZSH_BASH_COMPLETIONS_FALLBACK_AUTO_UPDATE_THRESHOLD`: Sets a threshold (in
+  seconds) to check if the completions have been changed in case the lazy load
+  update is enabled. This is set by default at 300 seconds.
