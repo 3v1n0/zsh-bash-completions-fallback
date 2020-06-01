@@ -141,3 +141,20 @@ get_completions() {
         echo "${COMPREPLY[$i]%%*( )}"
     done
 }
+
+get_defined_completions() {
+    local defined_completions=()
+    # Redefine complete bash builtin function to catch all the defined actions
+    # We may call `builtin complete "$@"` at the end to override the actual
+    # function, but this doesn't seem to be needed in this case, so let's save
+    # some cycles.
+    function complete() {
+        parse_complete_options "$@"
+        defined_completions+=(${COMPLETE_SUPPORTED_COMMANDS[@]})
+    }
+
+    source_bash_completion
+    unset -f complete
+
+    printf "%s\n" "${defined_completions[@]}"
+}
