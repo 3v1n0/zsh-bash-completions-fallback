@@ -118,7 +118,7 @@ function _bash-completion-init-and-continue()
 
     local current_binding=$(_bash_completion_get_current_tab_completer)
     (( ${+functions[_bash_completions_lazy_load]} )) && \
-        unset _bash_completions_lazy_load
+        unfunction _bash_completions_lazy_load
     _bash_completions_load
     _bash_completions_loaded=1
 
