@@ -6,8 +6,28 @@
 #
 
 compopt() {
-    # Override default compopt
-    # TODO, to implement when possible
+    # TODO implement default case addition and removal
+    [ -z "$_COMP_OPTIONS" ] &&
+        _COMP_OPTIONS=()
+
+    while [ ${#@} -gt 0 ]; do
+        case "$1" in
+            -o|+o)
+                local opt="${2#\'}"
+                local opt="${opt%\'}"
+
+                if [ "$1" == "-o" ]; then
+                    _COMP_OPTIONS+=("$opt")
+                else
+                    local del=("$opt")
+                    _COMP_OPTIONS=("${_COMP_OPTIONS[@]/$del}")
+                fi
+
+                shift 2
+            ;;
+        esac
+    done
+
     return 0
 }
 
@@ -42,9 +62,11 @@ parse_complete_options() {
     unset COMPLETE_ACTION
     unset COMPLETE_ACTION_TYPE
     unset COMPLETE_SUPPORTED_COMMANDS
+    unset COMPLETE_OPTION
 
     COMPLETE_ACTION=
     COMPLETE_SUPPORTED_COMMANDS=()
+    COMPLETE_OPTION=
 
     while [ ${#@} -gt 0 ]; do
         case "$1" in
@@ -57,7 +79,12 @@ parse_complete_options() {
                 COMPLETE_ACTION_TYPE=${1#-}
                 shift 2
             ;;
-            -pr|-D|-E|-o|-A|-G|-F|-C|-P|-S)
+            -pr|-D|-E|-A|-G|-F|-C|-P|-S)
+                shift 2
+            ;;
+            -o)
+                COMPLETE_OPTION="${2#\'}"
+                COMPLETE_OPTION="${COMPLETE_OPTION%\'}"
                 shift 2
             ;;
             -X|-W)
@@ -85,6 +112,8 @@ parse_complete_options() {
 get_completions() {
     local COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
     local completion COMPREPLY=() cmd_name
+
+    _COMP_OPTIONS=()
 
     COMP_LINE=${ZSH_BUFFER}
     COMP_POINT=${ZSH_CURSOR:-${#COMP_LINE}}
@@ -114,6 +143,7 @@ get_completions() {
         local args=${BASH_REMATCH[1]};
         parse_complete_options $args
         completion="$COMPLETE_ACTION"
+        _COMP_OPTIONS+=("$COMPLETE_OPTION")
     else
         return 1;
     fi
@@ -142,10 +172,9 @@ get_completions() {
         ${cmd[@]}
     fi
 
-    # print completions to stdout
-    for ((i = 0; i < "${#COMPREPLY[@]}"; i++)); do
-        echo "${COMPREPLY[$i]%%*( )}"
-    done
+    # print options, followed by completions to stdout
+    echo "${_COMP_OPTIONS[@]}"
+    printf "%s\n" ${COMPREPLY[@]}
 }
 
 get_defined_completions() {

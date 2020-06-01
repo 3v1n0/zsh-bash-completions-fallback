@@ -3,6 +3,8 @@
 _bash_completions_getter_path=${0:A:h}/bash-completions-getter.sh
 
 function _bash_completions_fallback_completer {
+    emulate -L zsh
+    unsetopt nomatch badpattern
     local out=("${(@f)$( \
         ZSH_NAME="$name" \
         ZSH_BUFFER="$BUFFER" \
@@ -12,7 +14,47 @@ function _bash_completions_fallback_completer {
         ZSH_CURRENT=$((CURRENT-1)) \
         bash -c \
         "source ${_bash_completions_getter_path}; get_completions")}");
-    compadd -a out
+
+    local -a -U bopts=("${(ps: :)${(@f)out:0:1}}");
+    local -a -U bcompletions=("${(@f)out:1}")
+    local -a -U compoptions=()
+
+    if ((${bopts[(Ie)nospace]})); then
+        compoptions+=(-S '')
+    fi
+
+    if ((${bopts[(Ie)nosort]})); then
+        compoptions+=(-o 'nosort')
+    fi
+
+    local compadd_opts=("${compoptions[@]}")
+    if [ -n "$bcompletions" ]; then
+        compadd_opts+=(-Q)
+
+        if ((${bopts[(Ie)filenames]})); then
+            compset -P '*/' && \
+                bcompletions=(${bcompletions##*/})
+            compset -S '/*' && \
+                bcompletions=(${bcompletions%%/*})
+            compadd_opts+=(-f)
+        fi
+    fi
+
+    if [ -z "$bcompletions" ] ||
+       ! compadd "${compadd_opts[@]}" -a bcompletions; then
+
+        if ((${bopts[(Ie)default]})) || ((${bopts[(Ie)bashdefault]})); then
+            _default "${compoptions[@]}"
+        elif ((${bopts[(Ie)dirnames]})); then
+            _directories "${compoptions[@]}"
+        fi
+    fi
+
+    if ((${bopts[(Ie)plusdirs]})); then
+        _directories "${compoptions[@]}"
+    fi
+
+    return $?
 }
 
 function _bash_completions_fetch_supported_commands {
