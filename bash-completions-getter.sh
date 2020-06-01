@@ -119,7 +119,8 @@ get_completions() {
     fi
 
     # ensure completion was detected
-    [[ -n "$completion" ]] || return 1
+    ([[ -z "$completion" ]] || [[ "$completion" == "_minimal" ]]) && \
+        return 1
 
     # execute completion function or command (exporting the needed variables)
     # This may fail if compopt is called, but there's no easy way to pre-fill
