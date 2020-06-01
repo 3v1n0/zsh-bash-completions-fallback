@@ -43,28 +43,42 @@ parse_complete_options() {
     unset COMPLETE_ACTION_TYPE
     unset COMPLETE_SUPPORTED_COMMANDS
 
-    while getopts ":abcdefgjksuvp:D:o:A:G:W:F:C:X:P:S:" opt; do
-        case ${opt} in
-            F|C)
-                [ -n "$COMPLETE_ACTION" ] && return 2
-                local optarg=${OPTARG#\'}
-                COMPLETE_ACTION=${optarg%\'}
-                COMPLETE_ACTION_TYPE=${opt}
+    COMPLETE_ACTION=
+    COMPLETE_SUPPORTED_COMMANDS=()
+
+    while [ ${#@} -gt 0 ]; do
+        case "$1" in
+            -F|-C)
+                [ -n "$COMPLETE_ACTION" ] &&
+                    return 2
+
+                local optarg="${2#\'}"
+                COMPLETE_ACTION="${optarg%\'}"
+                COMPLETE_ACTION_TYPE=${1#-}
+                shift 2
             ;;
-            X)
-                # TODO, but to support this we also need to handle compopt and -o
+            -pr|-D|-E|-o|-A|-G|-F|-C|-P|-S)
+                shift 2
             ;;
-            W)
+            -X|-W)
                 # TODO, but to support this we also need to handle compopt and -o
+                shift 2
+            ;;
+            -*)
+                shift
+            ;;
+            *)
+                break
             ;;
         esac
     done
 
-    [ -z "$COMPLETE_ACTION" ] && return 1
+    [ -z "$COMPLETE_ACTION" ] \
+        && return;
 
-    COMPLETE_SUPPORTED_COMMANDS=()
-    for ((i = $OPTIND; i <= ${#@}; i++)); do
-        COMPLETE_SUPPORTED_COMMANDS+=("${@:$i:1}")
+    while [ ${#@} -gt 0 ]; do
+        COMPLETE_SUPPORTED_COMMANDS+=("$1")
+        shift
     done
 }
 
