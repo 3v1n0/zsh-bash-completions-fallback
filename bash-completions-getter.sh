@@ -99,9 +99,11 @@ parse_complete_options() {
     unset COMPLETE_ACTION_TYPE
     unset COMPLETE_SUPPORTED_COMMANDS
     unset COMPLETE_OPTION
+    unset COMPLETE_WORDS
 
     COMPLETE_ACTION=
     COMPLETE_SUPPORTED_COMMANDS=()
+    COMPLETE_WORDS=()
     COMPLETE_OPTION=
 
     while [ ${#@} -gt 0 ]; do
@@ -121,7 +123,12 @@ parse_complete_options() {
                 COMPLETE_OPTION="${2}"
                 shift 2
             ;;
-            -X|-W)
+            -W)
+                parse_quoted_arguments "$2"
+                COMPLETE_WORDS=("${UNQUOTED_ARGS[@]}")
+                shift 2
+            ;;
+            -X)
                 # TODO, but to support this we also need to handle compopt and -o
                 shift 2
             ;;
@@ -134,7 +141,7 @@ parse_complete_options() {
         esac
     done
 
-    [ -z "$COMPLETE_ACTION" ] \
+    [ -z "$COMPLETE_ACTION" ] && [ -z "$COMPLETE_WORDS" ] \
         && return;
 
     while [ ${#@} -gt 0 ]; do
@@ -185,8 +192,15 @@ get_completions() {
     fi
 
     # ensure completion was detected
-    ([[ -z "$completion" ]] || [[ "$completion" == "_minimal" ]]) && \
+    if ([[ -z "$completion" ]] || [[ "$completion" == "_minimal" ]]); then
+        if [ -n "$COMPLETE_WORDS" ]; then
+            echo "${_COMP_OPTIONS[@]}"
+            printf "%s\n" "${COMPLETE_WORDS[@]}"
+            return 0
+        fi
+
         return 1
+    fi
 
     # execute completion function or command (exporting the needed variables)
     # This may fail if compopt is called, but there's no easy way to pre-fill
@@ -208,9 +222,12 @@ get_completions() {
         ${cmd[@]}
     fi
 
+    [ -n "$COMPLETE_WORDS" ] &&
+        COMPREPLY+=("${COMPLETE_WORDS[@]}")
+
     # print options, followed by completions to stdout
     echo "${_COMP_OPTIONS[@]}"
-    printf "%s\n" ${COMPREPLY[@]}
+    printf "%s\n" "${COMPREPLY[@]}"
 }
 
 get_defined_completions() {
@@ -221,7 +238,7 @@ get_defined_completions() {
     # some cycles.
     function complete() {
         parse_complete_options "$@"
-        defined_completions+=(${COMPLETE_SUPPORTED_COMMANDS[@]})
+        defined_completions+=("${COMPLETE_SUPPORTED_COMMANDS[@]}")
     }
 
     source_bash_completion
