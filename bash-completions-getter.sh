@@ -123,7 +123,7 @@ get_completions() {
     cmd+=("$cmd_name")
     cmd+=("'${COMP_WORDS[$COMP_CWORD]}'")
 
-    if [ $((COMP_CWORD-1)) -ge 0 ]; then
+    if [ ${COMP_CWORD} -gt 0 ]; then
         cmd+=("'${COMP_WORDS[$((COMP_CWORD-1))]}'");
     else
         cmd+=('');
