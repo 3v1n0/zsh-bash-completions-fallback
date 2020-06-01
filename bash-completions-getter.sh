@@ -58,6 +58,42 @@ source_bash_completion() {
     return 1
 }
 
+parse_quoted_arguments() {
+    local args="${1#\'}"
+    args="${args%\'}"
+    local QUOTED_ARGS=()
+    quote="${2:-\"}"
+
+    if [[ "${args:$i}" == *"${quote}"* ]]; then
+        new_args="${args}"
+
+        for ((i = 1; i < "${#args}"; i++)); do
+            if [[ "${args:$i}" =~ [^${quote}]*${quote}([^${quote}]*)${quote} ]]; then
+                local m="${BASH_REMATCH[1]}"
+                QUOTED_ARGS+=("${m}")
+                placeholder="____QUOTED_ARG_${#QUOTED_ARGS[@]}____"
+                new_args=${new_args/"${quote}${m}${quote}"/${placeholder}}
+                i=$((i + ${#BASH_REMATCH} - 1))
+            fi
+
+            if [[ "${args:$i}" != *"${quote}"* ]]; then
+                break
+            fi
+        done
+
+        args="${new_args}"
+    fi
+
+    UNQUOTED_ARGS=($args)
+
+    if [ -n "$QUOTED_ARGS" ]; then
+        for ((i = 0; i < ${#QUOTED_ARGS[@]}; i++)); do
+            placeholder="____QUOTED_ARG_$((i+1))____"
+            UNQUOTED_ARGS=("${UNQUOTED_ARGS[@]/$placeholder/"${QUOTED_ARGS[$i]}"}")
+        done
+    fi
+}
+
 parse_complete_options() {
     unset COMPLETE_ACTION
     unset COMPLETE_ACTION_TYPE
@@ -74,8 +110,7 @@ parse_complete_options() {
                 [ -n "$COMPLETE_ACTION" ] &&
                     return 2
 
-                local optarg="${2#\'}"
-                COMPLETE_ACTION="${optarg%\'}"
+                COMPLETE_ACTION="${2}"
                 COMPLETE_ACTION_TYPE=${1#-}
                 shift 2
             ;;
@@ -83,8 +118,7 @@ parse_complete_options() {
                 shift 2
             ;;
             -o)
-                COMPLETE_OPTION="${2#\'}"
-                COMPLETE_OPTION="${COMPLETE_OPTION%\'}"
+                COMPLETE_OPTION="${2}"
                 shift 2
             ;;
             -X|-W)
@@ -140,8 +174,10 @@ get_completions() {
     # detect completion function or command
     if [[ "$completion_command" =~ \
           ^complete[[:space:]]+(.+) ]]; then
-        local args=${BASH_REMATCH[1]};
-        parse_complete_options $args
+        local args="${BASH_REMATCH[1]}";
+        parse_quoted_arguments "$args" "'"
+        parse_complete_options "${UNQUOTED_ARGS[@]}"
+
         completion="$COMPLETE_ACTION"
         _COMP_OPTIONS+=("$COMPLETE_OPTION")
     else
