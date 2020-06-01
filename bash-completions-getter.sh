@@ -101,10 +101,15 @@ get_completions() {
 
     # load completion
     source_bash_completion
-    _completion_loader "$cmd_name"
 
+    # load completion, in case getting from the specific command file
+    completion_command=$(complete -p "$cmd_name" 2>/dev/null)
+    if [ -z "$completion_command" ]; then
+        _completion_loader "$cmd_name"
+        completion_command=$(complete -p "$cmd_name" 2>/dev/null)
+    fi
     # detect completion function or command
-    if [[ "$(complete -p "$cmd_name" 2>/dev/null)" =~ \
+    if [[ "$completion_command" =~ \
           ^complete[[:space:]]+(.+) ]]; then
         local args=${BASH_REMATCH[1]};
         parse_complete_options $args

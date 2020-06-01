@@ -98,6 +98,10 @@ default values only after having loaded this script into your ZSH session.
   time the tab-completion is triggered. By setting this the completions are
   loaded instead at startup.
 
+* `ZSH_BASH_COMPLETIONS_FALLBACK_LOAD_NATIVE_COMPLETIONS` set this variable to
+  a value that is different from `true` not to ask the bash for all its suported
+  completions, but only relying in the provided completion files.
+
 * `ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_AUTO_UPDATE` set this variable (to any
   value) to automatically check for new completions and to install them at every
   tab-completion if the threshold from the last update set in

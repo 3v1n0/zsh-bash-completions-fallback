@@ -38,6 +38,13 @@ function _bash_completions_fetch_supported_commands {
             _bash_completions_commands+=($command)
         done
     done
+
+    if [ -n "${ZSH_BASH_COMPLETIONS_FALLBACK_LOAD_NATIVE_COMPLETIONS-:true}" ]; then
+        local out=("${(u@f)$( \
+            bash -c \
+            "source ${_bash_completions_getter_path}; get_defined_completions")}");
+        _bash_completions_commands+=($out)
+    fi
 }
 
 function _bash_completions_load {
