@@ -58,6 +58,22 @@ Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
         source ~/.zshrc
 
+Using [Zinit](https://github.com/zdharma/zinit):
+
+- If you're using normal loading mode:
+
+        # Replace `light` with `load` if you want some more debugging
+        zinit ice depth=1 # optional, but avoids downloading the full history
+        zinit light 3v1n0/zsh-bash-completions-fallback
+
+- If you're using turbo mode, you can avoid using the internal lazy mode:
+
+        zinit wait lucid nocd depth=1 \
+          atinit='ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE=true' \
+            for 3v1n0/zsh-bash-completions-fallback
+
+- Add those to your `~/.zshrc` to keep the changes persistent
+
 Using other plugins manager:
 
         # Depending on the tool the syntax may vary but it's generally just
