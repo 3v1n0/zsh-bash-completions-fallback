@@ -54,9 +54,30 @@ Using [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh):
 
         plugins=( [plugins...] zsh-bash-completions-fallback)
 
-3. Source `~/.zshrc`  to take changes into account:
+3. Source `~/.zshrc` (or restart zsh) to take changes into account
 
         source ~/.zshrc
+
+Using other plugins manager:
+
+        # Depending on the tool the syntax may vary but it's generally just
+        $your_plugin_manager 3v1n0/zsh-bash-completions-fallback
+
+Manual installation:
+
+1. Clone this repository in a folder (like ~/.zsh-bash-completions-fallback):
+
+        git clone https://github.com/3v1n0/zsh-bash-completions-fallback $HOME/.zsh-bash-completions-fallback
+
+2. Add to your `~/.zshrc`:
+
+        source $HOME/.zsh-bash-completions-fallback/zsh-bash-completions-fallback.plugin.zsh
+
+3. Source `~/.zshrc` (or restart zsh) to start using the plugin
+
+        source ~/.zshrc
+
+4. Of course in case you want to test it temporary you just have to `source` the plugin file (`zsh-bash-completions-fallback.plugin.zsh`)
 
 Configuration
 ------------------------------------------------------------------------------
