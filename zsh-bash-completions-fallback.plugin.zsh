@@ -195,8 +195,10 @@ function _bash-completion-init-and-continue()
 
     if [[ "$current_binding" == "_bash-completion-init-and-continue" ]]; then
         bindkey "^I" $_bash_completion_previous_binding
+        zle $_bash_completion_previous_binding
         unset _bash_completion_previous_binding
         unfunction _bash-completion-init-and-continue
+        return
     fi
 
     zle $_bash_completion_previous_binding
