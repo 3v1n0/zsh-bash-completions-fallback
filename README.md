@@ -13,10 +13,9 @@ and including various fixes to support commands and completion parameters).
 Make sure you load this after other plugins to prevent their completions to be
 replaced by the (simpler) bash ones.
 
-Not all the bash completions can work as they precisely do in bash, as per
-missing `compopt` support, that may be used to control the output or avoid
-adding spaces or limit the results. However this could be implemented at later
-times.
+Most of all bash completions can now work as they precisely do in bash, as per
+the `compopt` simulation that is added here. It may be used to control the
+output or avoid adding spaces or limit the results.
 
 The plugin by default works by lazy-loading the completions the first time you
 hit TAB to complete a command, however this can be controlled using the
