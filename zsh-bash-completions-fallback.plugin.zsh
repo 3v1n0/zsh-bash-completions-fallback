@@ -222,3 +222,15 @@ if [ -n "$ZSH_BASH_COMPLETIONS_FALLBACK_LAZYLOAD_DISABLE" ]; then
 else
     _bash_completions_lazy_load
 fi
+
+function _bash_completions_fallback_list_handled_completions()
+{
+    local -a our_completions=();
+    for command completion in ${(kv)_comps}; do
+        if [ "$completion" = _bash_completions_fallback_completer ]; then
+            our_completions+=($command)
+        fi
+    done
+
+    printf "%-32s\n" ${(o)our_completions[@]}
+}

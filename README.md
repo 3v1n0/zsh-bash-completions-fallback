@@ -29,9 +29,10 @@ to update all the the available completions at every TAB-completion.
 This is disabled by default, to avoid IO operations at each completion, but it
 is still very fast in most of the platforms.
 
-Once loaded you can see all the completions available via bash using
+Once loaded you can see all the completions available via bash (through this
+script) using:
 
-      for command completion in ${(kv)_comps}; do printf "%-32s %s\n" $command $completion; done | sort | grep _bash_completer
+    _bash_completions_fallback_list_handled_completions
 
 
 Requirements
