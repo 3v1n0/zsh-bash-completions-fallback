@@ -92,6 +92,9 @@ Manual installation:
 
 3. Source `~/.zshrc` (or restart zsh) to start using the plugin
 
+        # This plugin requires compinit, so make sure that your ~/.zshrc or
+        # your package manager loads it before, otherwise this is needed
+        #autoload -U compinit && compinit
         source ~/.zshrc
 
 4. Of course in case you want to test it temporary you just have to `source` the plugin file (`zsh-bash-completions-fallback.plugin.zsh`)
