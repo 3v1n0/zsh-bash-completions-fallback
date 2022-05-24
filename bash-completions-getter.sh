@@ -217,9 +217,9 @@ get_completions() {
 
     if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
-        COMPREPLY=($("${cmd[@]}"))
+        COMPREPLY=($("${cmd[@]}" 2>/dev/null))
     else
-        ${cmd[@]}
+        ${cmd[@]} 2>/dev/null
     fi
 
     [ -n "$COMPLETE_WORDS" ] &&
