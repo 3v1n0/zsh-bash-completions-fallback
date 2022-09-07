@@ -94,13 +94,13 @@ parse_quoted_arguments() {
 }
 
 parse_complete_options() {
-    unset COMPLETE_ACTION
-    unset COMPLETE_ACTION_TYPE
+    unset COMPLETE_CALL
+    unset COMPLETE_CALL_TYPE
     unset COMPLETE_SUPPORTED_COMMANDS
     unset COMPLETE_OPTION
     unset COMPLETE_WORDS
 
-    COMPLETE_ACTION=
+    COMPLETE_CALL=
     COMPLETE_SUPPORTED_COMMANDS=()
     COMPLETE_WORDS=()
     COMPLETE_OPTION=
@@ -108,11 +108,11 @@ parse_complete_options() {
     while [ ${#@} -gt 0 ]; do
         case "$1" in
             -F|-C)
-                [ -n "$COMPLETE_ACTION" ] &&
+                [ -n "$COMPLETE_CALL" ] &&
                     return 2
 
-                COMPLETE_ACTION="${2}"
-                COMPLETE_ACTION_TYPE=${1#-}
+                COMPLETE_CALL="${2}"
+                COMPLETE_CALL_TYPE=${1#-}
                 shift 2
             ;;
             -pr|-D|-E|-A|-G|-F|-C|-P|-S)
@@ -140,7 +140,7 @@ parse_complete_options() {
         esac
     done
 
-    [ -z "$COMPLETE_ACTION" ] && [ ${#COMPLETE_WORDS[@]} -eq 0 ] \
+    [ -z "$COMPLETE_CALL" ] && [ ${#COMPLETE_WORDS[@]} -eq 0 ] \
         && return;
 
     while [ ${#@} -gt 0 ]; do
@@ -202,7 +202,7 @@ get_completions() {
         parse_quoted_arguments "$args" "'"
         parse_complete_options "${UNQUOTED_ARGS[@]}"
 
-        completion="$COMPLETE_ACTION"
+        completion="$COMPLETE_CALL"
         _COMP_OPTIONS+=("$COMPLETE_OPTION")
     else
         return 1;
@@ -225,7 +225,7 @@ get_completions() {
     fi
 
     if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
-        echo "Completion action is '$completion' of type '$COMPLETE_ACTION_TYPE'" >&2
+        echo "Completion action is '$completion' of type '$COMPLETE_CALL_TYPE'" >&2
     fi
 
     # execute completion function or command (exporting the needed variables)
@@ -247,7 +247,7 @@ get_completions() {
         echo -n "Calling " >&2; printf "'%s'," "${cmd[@]}" >&2; echo >&2
     fi
 
-    if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
+    if [ "$COMPLETE_CALL_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
         mapfile -t COMPREPLY < <("${cmd[@]}" 2>"$errorout")
     else
