@@ -140,7 +140,7 @@ parse_complete_options() {
         esac
     done
 
-    [ -z "$COMPLETE_ACTION" ] && [ -z "$COMPLETE_WORDS" ] \
+    [ -z "$COMPLETE_ACTION" ] && [ ${#COMPLETE_WORDS[@]} -eq 0 ] \
         && return;
 
     while [ ${#@} -gt 0 ]; do
@@ -192,7 +192,7 @@ get_completions() {
     fi
 
     if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
-        echo "Using completion $completion_command" >&2
+        echo "Using completion command '$completion_command'" >&2
     fi
 
     # detect completion function or command
@@ -208,17 +208,15 @@ get_completions() {
         return 1;
     fi
 
-    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
-        echo -n "OPTIONS: " >&2; printf "'%s'," "${_COMP_OPTIONS[@]}" >&2; echo >&2
-    fi
-
     # ensure completion was detected
-    if ([[ -z "$completion" ]] || [[ "$completion" == "_minimal" ]]); then
-        if [ -n "$COMPLETE_WORDS" ]; then
+    if [ -z "$completion" ] || [[ "$completion" == "_minimal" ]]; then
+        if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+            echo -n "OPTIONS: " >&2; printf "'%s'," "${_COMP_OPTIONS[@]}" >&2; echo >&2
+            echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
+        fi
+
+        if [ ${#COMPLETE_WORDS[@]} -gt 0 ]; then
             echo "${_COMP_OPTIONS[@]}"
-            if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
-                echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
-            fi
             printf "%s\n" "${COMPLETE_WORDS[@]}"
             return 0
         fi
@@ -227,7 +225,7 @@ get_completions() {
     fi
 
     if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
-        echo "Calling "$completion" $COMPLETE_ACTION_TYPE" >&2
+        echo "Completion action is '$completion' of type '$COMPLETE_ACTION_TYPE'" >&2
     fi
 
     # execute completion function or command (exporting the needed variables)
@@ -237,27 +235,31 @@ get_completions() {
     cmd+=("$cmd_name")
     cmd+=("'${COMP_WORDS[${COMP_CWORD}]}'")
 
-    if [ ${COMP_CWORD} -gt 0 ]; then
+    if [ "${COMP_CWORD}" -gt 0 ]; then
         cmd+=("'${COMP_WORDS[$((COMP_CWORD-1))]}'");
     else
         cmd+=('');
     fi
 
+    errorout=/dev/null
     if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        errorout=/dev/stderr
         echo -n "Calling " >&2; printf "'%s'," "${cmd[@]}" >&2; echo >&2
     fi
 
     if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
-        COMPREPLY=($("${cmd[@]}" 2>/dev/null))
+        mapfile -t COMPREPLY < <("${cmd[@]}" 2>"$errorout")
     else
-        ${cmd[@]} 2>/dev/null
+        "${cmd[@]}" 2>"$errorout"
     fi
 
-    [ -n "$COMPLETE_WORDS" ] &&
+    [ ${#COMPLETE_WORDS[@]} -gt 0 ] &&
         COMPREPLY+=("${COMPLETE_WORDS[@]}")
 
     if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo -n "OPTIONS: " >&2; printf "'%s'," "${_COMP_OPTIONS[@]}" >&2; echo >&2
+        echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
         echo -n "REPLY: " >&2; printf "'%s'," "${COMPREPLY[@]}" >&2; echo >&2
     fi
 
