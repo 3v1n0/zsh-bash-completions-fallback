@@ -42,7 +42,6 @@ source_bash_completion() {
          [ -f "${BASH_SOURCE%/*}/$src_name" ]; then
             source "${BASH_SOURCE%/*}/$src_name"
     else
-        local -a dirs=()
         local OIFS=$IFS IFS=: dir
         local lookup_dirs=(${XDG_DATA_DIRS:-/usr/local/share:/usr/share})
         IFS=$OIFS
@@ -162,12 +161,25 @@ get_completions() {
     COMP_WORDS=(${ZSH_WORDS[@]})
     cmd_name=${ZSH_NAME}
 
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo -n "INITIAL_WORDS: " >&2; printf "'%s'," "${COMP_WORDS[@]}" >&2; echo >&2
+    fi
 
     # add '' to COMP_WORDS if the last character of the command line is a space
     [[ "${COMP_LINE[@]: -1}" = ' ' ]] && COMP_WORDS+=('')
 
     # index of the last word as fallback
     COMP_CWORD=${ZSH_CURRENT:-$(( ${#COMP_WORDS[@]} - 1 ))}
+
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo "CWORD: $COMP_CWORD" >&2
+        echo "LINE: '$COMP_LINE'" >&2
+        echo "POINT: $COMP_POINT" >&2
+        echo -n "WORDS: " >&2; printf "'%s'," "${COMP_WORDS[@]}" >&2; echo >&2
+        echo "WORDBREAKS: $COMP_WORDBREAKS" >&2
+
+        echo "loading complete for '$cmd_name'" >&2
+    fi
 
     # load completion
     source_bash_completion
@@ -178,6 +190,11 @@ get_completions() {
         _completion_loader "$cmd_name"
         completion_command=$(complete -p "$cmd_name" 2>/dev/null)
     fi
+
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo "Using completion $completion_command" >&2
+    fi
+
     # detect completion function or command
     if [[ "$completion_command" =~ \
           ^complete[[:space:]]+(.+) ]]; then
@@ -191,15 +208,26 @@ get_completions() {
         return 1;
     fi
 
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo -n "OPTIONS: " >&2; printf "'%s'," "${_COMP_OPTIONS[@]}" >&2; echo >&2
+    fi
+
     # ensure completion was detected
     if ([[ -z "$completion" ]] || [[ "$completion" == "_minimal" ]]); then
         if [ -n "$COMPLETE_WORDS" ]; then
             echo "${_COMP_OPTIONS[@]}"
+            if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+                echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
+            fi
             printf "%s\n" "${COMPLETE_WORDS[@]}"
             return 0
         fi
 
         return 1
+    fi
+
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo "Calling "$completion" $COMPLETE_ACTION_TYPE" >&2
     fi
 
     # execute completion function or command (exporting the needed variables)
@@ -215,6 +243,10 @@ get_completions() {
         cmd+=('');
     fi
 
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo -n "Calling " >&2; printf "'%s'," "${cmd[@]}" >&2; echo >&2
+    fi
+
     if [ "$COMPLETE_ACTION_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
         COMPREPLY=($("${cmd[@]}" 2>/dev/null))
@@ -224,6 +256,10 @@ get_completions() {
 
     [ -n "$COMPLETE_WORDS" ] &&
         COMPREPLY+=("${COMPLETE_WORDS[@]}")
+
+    if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
+        echo -n "REPLY: " >&2; printf "'%s'," "${COMPREPLY[@]}" >&2; echo >&2
+    fi
 
     # print options, followed by completions to stdout
     echo "${_COMP_OPTIONS[@]}"
@@ -245,4 +281,15 @@ get_defined_completions() {
     unset -f complete
 
     printf "%s\n" "${defined_completions[@]}"
+}
+
+test_bash_completion() {
+    ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG=1
+    ZSH_BUFFER="$@"
+    ZSH_CURSOR=${ZSH_CURSOR:-${#ZSH_BUFFER}}
+    COMP_WORDBREAKS=${ZSH_WORDBREAKS}
+    ZSH_WORDS=(${@})
+    ZSH_NAME="${ZSH_NAME:-${ZSH_WORDS[0]}}"
+
+    get_completions
 }
