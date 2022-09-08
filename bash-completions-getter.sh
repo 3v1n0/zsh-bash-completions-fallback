@@ -215,7 +215,8 @@ get_completions() {
             echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
         fi
 
-        if [ ${#COMPLETE_WORDS[@]} -gt 0 ]; then
+        if [ ${#COMPLETE_WORDS[@]} -gt 0 ] ||
+           [ ${#COMPLETE_OPTIONS[@]} -gt 0 ]; then
             echo "${_COMP_OPTIONS[@]}"
             printf "%s\n" "${COMPLETE_WORDS[@]}"
             return 0

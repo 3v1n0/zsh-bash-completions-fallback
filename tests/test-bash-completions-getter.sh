@@ -115,8 +115,8 @@ check_completion foo-with-multiple-options "foo" "nosort nospace"
 complete -o nospace -W "foo bar" -o nosort foo-with-multiple-words-and-options
 check_completion foo-with-multiple-words-and-options "foo bar" "nosort nospace"
 
-complete -o nospace -o nosort foo-with-only-options
-expect_failure foo-with-only-options
+complete -o nospace -o nosort -o default foo-with-only-options
+check_completion foo-with-only-options '' "default nosort nospace"
 
 complete -F foo_complete_function_not_existant foo-with-function-invalid
 expect_failure foo-with-function-invalid
