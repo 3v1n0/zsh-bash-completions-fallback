@@ -141,3 +141,15 @@ function foo_complete_function() {
 
 complete -F foo_complete_function foo-with-function
 check_completion 'foo-with-function pre-word word' "-c -D efgh"
+
+function foo_complete_function_with_options() {
+    EXPECTED_COMPLETE_PROGRAM=foo-with-function-and-options
+    EXPECTED_COMPLETE_WORD="'word'"
+    EXPECTED_COMPLETE_PRE_WORD="'pre-word'"
+    TEST_COMPLETE_REPLY=(-c -D efgh)
+    compopt -o default +o default +o bar -o nosort -o nospace +o nospace -o nospace
+    test_complete_function "$@"
+}
+
+complete -F foo_complete_function_with_options foo-with-function-and-options
+check_completion 'foo-with-function-and-options pre-word word' "-c -D efgh" "nosort nospace"
