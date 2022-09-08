@@ -94,12 +94,14 @@ parse_quoted_arguments() {
 }
 
 parse_complete_options() {
+    unset COMPLETE_ACTIONS
     unset COMPLETE_CALL
     unset COMPLETE_CALL_TYPE
     unset COMPLETE_SUPPORTED_COMMANDS
     unset COMPLETE_OPTIONS
     unset COMPLETE_WORDS
 
+    COMPLETE_ACTIONS=()
     COMPLETE_CALL=
     COMPLETE_SUPPORTED_COMMANDS=()
     COMPLETE_WORDS=()
@@ -119,7 +121,7 @@ parse_complete_options() {
                 COMPLETE_ACTIONS+=("${2}")
                 shift 2
             ;;
-            -pr|-D|-E|-G|-F|-C|-P|-S)
+            -pr|-D|-E|-G|-P|-S)
                 shift 2
             ;;
             -o)
@@ -264,12 +266,15 @@ get_completions() {
     if [ -z "$completion" ] || [[ "$completion" == "_minimal" ]]; then
         if [ -n "$ZSH_BASH_COMPLETION_COMPLETION_FALLBACK_DEBUG" ]; then
             echo -n "OPTIONS: " >&2; printf "'%s'," "${_COMP_OPTIONS[@]}" >&2; echo >&2
+            echo -n "ACTIONS: " >&2; printf "'%s'," "${COMPLETE_ACTIONS[@]}" >&2; echo >&2
             echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
         fi
 
         if [ ${#COMPLETE_WORDS[@]} -gt 0 ] ||
-           [ ${#COMPLETE_OPTIONS[@]} -gt 0 ]; then
+           [ ${#COMPLETE_OPTIONS[@]} -gt 0 ] ||
+           [ ${#COMPLETE_ACTIONS[@]} -gt 0 ]; then
             echo "${_COMP_OPTIONS[@]}"
+            echo "${COMPLETE_ACTIONS[@]}"
             printf "%s\n" "${COMPLETE_WORDS[@]}"
             return 0
         fi
@@ -318,6 +323,7 @@ get_completions() {
 
     # print options, followed by completions to stdout
     echo "${_COMP_OPTIONS[@]}"
+    echo "${COMPLETE_ACTIONS[@]}"
     printf "%s\n" "${COMPREPLY[@]}"
 }
 

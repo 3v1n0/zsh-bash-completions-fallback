@@ -23,9 +23,11 @@ check_completion() {
     local input="$1"
     local expected_completions=("$2")
     local expected_options=("$3")
-    local expected_exit_code=${4:-0};
+    local expected_actions=("$4")
+    local expected_exit_code=${5:-0};
     local -a output
     local -a options
+    local -a actions
 
     echo "Checking completion $input" >&2
 
@@ -54,9 +56,11 @@ check_completion() {
     fi
 
     read -r -a options <<< "${output[0]}"
-    local completions=("${output[@]:1}")
+    read -r -a  actions <<< "${output[1]}"
+    local completions=("${output[@]:2}")
 
     echo -n "  options: " >&2; printf "'%s'," "${options[@]}" >&2; echo >&2
+    echo -n "  actions: " >&2; printf "'%s'," "${actions[@]}" >&2; echo >&2
     echo -n "  completions: " >&2; printf "'%s'," "${completions[@]}" >&2; echo >&2
 
     if [[ "${completions[*]}" != "${expected_completions[*]}" ]]; then
@@ -68,10 +72,15 @@ check_completion() {
         echo -n "! invalid options, expecting: "; printf "'%s'," "${expected_options[@]}"; echo
         exit 1
     fi
+
+    if [[ "${actions[*]}" != "${expected_actions[*]}" ]]; then
+        echo -n "! invalid actions, expecting: "; printf "'%s'," "${expected_actions[@]}"; echo
+        exit 1
+    fi
 }
 
 expect_failure() {
-    check_completion "$1" '' '' 1
+    check_completion "$1" '' '' '' 1
 }
 
 function test_complete_function() {
@@ -107,14 +116,29 @@ check_completion foo-with-multiple-words "foo --bar"
 complete -o nospace -W "foo" foo-with-word-and-option
 check_completion foo-with-word-and-option "foo" nospace
 
+complete -W "foo" -f foo-with-word-and-action
+check_completion foo-with-word-and-action "foo" '' file
+
+complete -o nospace -W "foo" -f foo-with-word-option-and-action
+check_completion foo-with-word-option-and-action "foo" nospace file
+
 complete -o nospace -W "foo" -o nosort foo-with-multiple-options
 check_completion foo-with-multiple-options "foo" "nosort nospace"
 
 complete -o nospace -W "foo bar" -o nosort foo-with-multiple-words-and-options
 check_completion foo-with-multiple-words-and-options "foo bar" "nosort nospace"
 
+complete -o nospace -W "foo bar" -o nosort -A binding -A job foo-with-multiple-words-options-and-actions
+check_completion foo-with-multiple-words-options-and-actions "foo bar" "nosort nospace" "job binding"
+
 complete -o nospace -o nosort -o default foo-with-only-options
 check_completion foo-with-only-options '' "default nosort nospace"
+
+complete -a -A 'command' -e -A 'file' foo-with-only-actions
+check_completion foo-with-only-actions '' '' 'alias command export file'
+
+complete -acefg foo-with-only-actions-joined
+check_completion foo-with-only-actions-joined '' '' 'alias command export file group'
 
 complete -F foo_complete_function_not_existant foo-with-function-invalid
 expect_failure foo-with-function-invalid

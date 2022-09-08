@@ -16,7 +16,8 @@ function _bash_completions_fallback_completer {
         "source ${_bash_completions_getter_path}; get_completions")}");
 
     local -a -U bopts=("${(ps: :)${(@f)out:0:1}}");
-    local -a -U bcompletions=("${(@f)out:1}")
+    local -a -U bactions=("${(ps: :)${(@f)out:1:2}}");
+    local -a -U bcompletions=("${(@f)out:2}")
     local -a -U compoptions=()
 
     if ((${bopts[(Ie)nospace]})); then
