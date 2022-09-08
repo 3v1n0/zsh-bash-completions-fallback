@@ -109,6 +109,9 @@ check_completion foo-with-multiple-words "foo --bar"
 complete -o nospace -W "foo" foo-with-word-and-option
 check_completion foo-with-word-and-option "foo" nospace
 
+complete -F foo_complete_function_not_existant foo-with-function-invalid
+expect_failure foo-with-function-invalid
+
 function foo_complete_function_simple() {
     EXPECTED_COMPLETE_PROGRAM=foo-with-function-simple
     EXPECTED_COMPLETE_WORD="''"

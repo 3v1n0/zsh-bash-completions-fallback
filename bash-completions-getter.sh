@@ -250,8 +250,8 @@ get_completions() {
     if [ "$COMPLETE_CALL_TYPE" == 'C' ]; then
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
         mapfile -t COMPREPLY < <("${cmd[@]}" 2>"$errorout")
-    else
-        "${cmd[@]}" 2>"$errorout"
+    elif ! "${cmd[@]}" 2>"$errorout"; then
+        return 1
     fi
 
     [ ${#COMPLETE_WORDS[@]} -gt 0 ] &&
