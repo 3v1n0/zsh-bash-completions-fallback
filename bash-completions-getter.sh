@@ -115,7 +115,11 @@ parse_complete_options() {
                 COMPLETE_CALL_TYPE=${1#-}
                 shift 2
             ;;
-            -pr|-D|-E|-A|-G|-F|-C|-P|-S)
+            -A)
+                COMPLETE_ACTIONS+=("${2}")
+                shift 2
+            ;;
+            -pr|-D|-E|-G|-F|-C|-P|-S)
                 shift 2
             ;;
             -o)
@@ -130,6 +134,54 @@ parse_complete_options() {
             -X)
                 # TODO, but to support this we also need to handle compopt and -o
                 shift 2
+            ;;
+            -a)
+                COMPLETE_ACTIONS+=("alias")
+                shift
+            ;;
+            -b)
+                COMPLETE_ACTIONS+=("builtin")
+                shift
+            ;;
+            -c)
+                COMPLETE_ACTIONS+=("command")
+                shift
+            ;;
+            -d)
+                COMPLETE_ACTIONS+=("directory")
+                shift
+            ;;
+            -e)
+                COMPLETE_ACTIONS+=("export")
+                shift
+            ;;
+            -f)
+                COMPLETE_ACTIONS+=("file")
+                shift
+            ;;
+            -g)
+                COMPLETE_ACTIONS+=("group")
+                shift
+            ;;
+            -j)
+                COMPLETE_ACTIONS+=("job")
+                shift
+            ;;
+            -k)
+                COMPLETE_ACTIONS+=("keyword")
+                shift
+            ;;
+            -s)
+                COMPLETE_ACTIONS+=("service")
+                shift
+            ;;
+            -u)
+                COMPLETE_ACTIONS+=("user")
+                shift
+            ;;
+            -v)
+                COMPLETE_ACTIONS+=("variable")
+                shift
             ;;
             -*)
                 shift

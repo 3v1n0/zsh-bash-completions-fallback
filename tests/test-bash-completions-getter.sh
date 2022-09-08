@@ -20,12 +20,12 @@ if [ -n "$DEBUG" ]; then
 fi
 
 check_completion() {
-    local OIFS=$IFS
     local input="$1"
     local expected_completions=("$2")
     local expected_options=("$3")
     local expected_exit_code=${4:-0};
     local -a output
+    local -a options
 
     echo "Checking completion $input" >&2
 
@@ -53,9 +53,7 @@ check_completion() {
         return 0
     fi
 
-    IFS=' '
-    local options=("${output[0]}")
-    IFS=$OIFS
+    read -r -a options <<< "${output[0]}"
     local completions=("${output[@]:1}")
 
     echo -n "  options: " >&2; printf "'%s'," "${options[@]}" >&2; echo >&2
