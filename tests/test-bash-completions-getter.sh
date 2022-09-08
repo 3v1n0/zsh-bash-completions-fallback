@@ -109,6 +109,15 @@ check_completion foo-with-multiple-words "foo --bar"
 complete -o nospace -W "foo" foo-with-word-and-option
 check_completion foo-with-word-and-option "foo" nospace
 
+complete -o nospace -W "foo" -o nosort foo-with-multiple-options
+check_completion foo-with-multiple-options "foo" "nosort nospace"
+
+complete -o nospace -W "foo bar" -o nosort foo-with-multiple-words-and-options
+check_completion foo-with-multiple-words-and-options "foo bar" "nosort nospace"
+
+complete -o nospace -o nosort foo-with-only-options
+expect_failure foo-with-only-options
+
 complete -F foo_complete_function_not_existant foo-with-function-invalid
 expect_failure foo-with-function-invalid
 

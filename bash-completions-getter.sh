@@ -97,13 +97,13 @@ parse_complete_options() {
     unset COMPLETE_CALL
     unset COMPLETE_CALL_TYPE
     unset COMPLETE_SUPPORTED_COMMANDS
-    unset COMPLETE_OPTION
+    unset COMPLETE_OPTIONS
     unset COMPLETE_WORDS
 
     COMPLETE_CALL=
     COMPLETE_SUPPORTED_COMMANDS=()
     COMPLETE_WORDS=()
-    COMPLETE_OPTION=
+    COMPLETE_OPTIONS=()
 
     while [ ${#@} -gt 0 ]; do
         case "$1" in
@@ -119,7 +119,7 @@ parse_complete_options() {
                 shift 2
             ;;
             -o)
-                COMPLETE_OPTION="${2}"
+                COMPLETE_OPTIONS+=("${2}")
                 shift 2
             ;;
             -W)
@@ -203,7 +203,7 @@ get_completions() {
         parse_complete_options "${UNQUOTED_ARGS[@]}"
 
         completion="$COMPLETE_CALL"
-        _COMP_OPTIONS+=("$COMPLETE_OPTION")
+        _COMP_OPTIONS+=("${COMPLETE_OPTIONS[@]}")
     else
         return 1;
     fi
