@@ -5,7 +5,7 @@
 # License: LGPLv3 (http://www.gnu.org/licenses/lgpl-3.0.txt)
 #
 
-compopt() {
+overridden_compopt() {
     # TODO implement default case addition and removal
     [ -z "$_COMP_OPTIONS" ] &&
         _COMP_OPTIONS=()
@@ -209,6 +209,11 @@ get_completions() {
 
     _COMP_OPTIONS=()
 
+    function compopt() {
+        overridden_compopt "$@"
+        return $?
+    }
+
     COMP_LINE=${ZSH_BUFFER}
     COMP_POINT=${ZSH_CURSOR:-${#COMP_LINE}}
     COMP_WORDBREAKS=${ZSH_WORDBREAKS}
@@ -259,6 +264,7 @@ get_completions() {
         completion="$COMPLETE_CALL"
         _COMP_OPTIONS+=("${COMPLETE_OPTIONS[@]}")
     else
+        unset -f compopt
         return 1;
     fi
 
@@ -270,9 +276,12 @@ get_completions() {
             echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
         fi
 
+        unset -f compopt
+
         if [ ${#COMPLETE_WORDS[@]} -gt 0 ] ||
            [ ${#COMPLETE_OPTIONS[@]} -gt 0 ] ||
            [ ${#COMPLETE_ACTIONS[@]} -gt 0 ]; then
+            unset -f compopt
             echo "${_COMP_OPTIONS[@]}"
             echo "${COMPLETE_ACTIONS[@]}"
             printf "%s\n" "${COMPLETE_WORDS[@]}"
@@ -309,6 +318,7 @@ get_completions() {
         export COMP_CWORD COMP_LINE COMP_POINT COMP_WORDS COMP_WORDBREAKS
         mapfile -t COMPREPLY < <("${cmd[@]}" 2>"$errorout")
     elif ! "${cmd[@]}" 2>"$errorout"; then
+        unset -f compopt
         return 1
     fi
 
@@ -320,6 +330,8 @@ get_completions() {
         echo -n "WORDS: " >&2; printf "'%s'," "${COMPLETE_WORDS[@]}" >&2; echo >&2
         echo -n "REPLY: " >&2; printf "'%s'," "${COMPREPLY[@]}" >&2; echo >&2
     fi
+
+    unset -f compopt
 
     # print options, followed by completions to stdout
     echo "${_COMP_OPTIONS[@]}"
