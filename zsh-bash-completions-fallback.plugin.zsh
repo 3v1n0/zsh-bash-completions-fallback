@@ -63,7 +63,7 @@ function _bash_completions_fetch_supported_commands {
     setopt extended_glob typeset_silent no_short_loops
     unsetopt nomatch
 
-    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-${${(@s/:/)${XDG_DATA_DIRS:-/usr/share}}[1]}/bash-completion}
     local -a dirs=(
         ${BASH_COMPLETION_USER_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion}/completions
     )
@@ -91,7 +91,7 @@ function _bash_completions_fetch_supported_commands {
 }
 
 function _bash_completions_load {
-    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-/usr/share/bash-completion}
+    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-${${(@s/:/)${XDG_DATA_DIRS:-/usr/share}}[1]}/bash-completion}
     local reserved_words=(
         "do"
         "done"
