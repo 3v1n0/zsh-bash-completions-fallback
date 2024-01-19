@@ -1,6 +1,17 @@
 [[ -o interactive ]] || return 0
 
 _bash_completions_getter_path=${0:A:h}/bash-completions-getter.sh
+_bash_completions_dirs=(
+    ~/.local/share
+    ${(@s/:/)${XDG_DATA_DIRS}} # in NixOS, it contains /run/current-system/sw/share
+    /data/data/com.termux/files/usr/share # Android Termux
+    ~/.local/state/nix/profile/share # Nix
+    /home/linuxbrew/.linuxbrew/share # Homebrew for Linux
+    /opt/share # Homebrew for arm macOS
+    /usr/local/share # Homebrew for x86 macOS
+    /${MINGW_ARCH:-mingw64}/share # Windows Msys2
+    /usr/share
+)
 
 function _bash_completions_fallback_completer {
     emulate -L zsh
@@ -63,17 +74,12 @@ function _bash_completions_fetch_supported_commands {
     setopt extended_glob typeset_silent no_short_loops
     unsetopt nomatch
 
-    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-${${(@s/:/)${XDG_DATA_DIRS:-/usr/share}}[1]}/bash-completion}
-    local -a dirs=(
-        ${BASH_COMPLETION_USER_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion}/completions
-    )
-
-    for dir in ${(@s/:/)${XDG_DATA_DIRS:-/usr/local/share:/usr/share}}; do
+    local dir dirs=($BASH_COMPLETION_USER_DIR)
+    for dir in "${_bash_completions_dirs[@]}"; do
         dirs+=("$dir/bash-completion/completions")
     done
 
-    dirs+=("$bash_completions/completions")
-
+    local c
     for dir in "${dirs[@]}"; do
         for c in "$dir"/*; do
             [ ! -f "$c" ] && continue
@@ -91,7 +97,6 @@ function _bash_completions_fetch_supported_commands {
 }
 
 function _bash_completions_load {
-    local bash_completions=${ZSH_BASH_COMPLETIONS_FALLBACK_PATH:-${${(@s/:/)${XDG_DATA_DIRS:-/usr/share}}[1]}/bash-completion}
     local reserved_words=(
         "do"
         "done"
@@ -121,11 +126,6 @@ function _bash_completions_load {
         "readonly"
         "typeset"
     )
-
-    if ! [ -f /etc/bash_completion ] &&
-       ! [ -f "$bash_completions/bash_completion" ]; then
-        return 1;
-    fi
 
     local -a -U _bash_completions_commands=()
     _bash_completions_fetch_supported_commands
