@@ -105,9 +105,6 @@ Configuration
 This script defines the following global variables. You may override their
 default values only after having loaded this script into your ZSH session.
 
-* `ZSH_BASH_COMPLETIONS_FALLBACK_PATH` overrides the default bash completions
-  path that is set to `/usr/share/bash-completion` by default.
-
 * `ZSH_BASH_COMPLETIONS_FALLBACK_REPLACE_ALL` set (to any value) to allow to
   replace all the zsh completions, even if we already have one for the given
   command.
