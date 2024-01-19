@@ -97,17 +97,6 @@ function _bash_completions_fetch_supported_commands {
 }
 
 function _bash_completions_load {
-    local dir bash_completions
-    if [ -d "$ZSH_BASH_COMPLETIONS_FALLBACK_PATH" ]; then
-        bash_completions=$ZSH_BASH_COMPLETIONS_FALLBACK_PATH
-    else
-        for dir in "${_bash_completions_dirs[@]}"; do
-            if [ -d $dir/bash-completion ]; then
-                bash_completions=$dir/bash-completion
-                break
-            fi
-        done
-    fi
     local reserved_words=(
         "do"
         "done"
@@ -137,11 +126,6 @@ function _bash_completions_load {
         "readonly"
         "typeset"
     )
-
-    if ! [ -f /etc/bash_completion ] &&
-       ! [ -f "$bash_completions/bash_completion" ]; then
-        return 1;
-    fi
 
     local -a -U _bash_completions_commands=()
     _bash_completions_fetch_supported_commands
